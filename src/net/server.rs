@@ -1,52 +1,43 @@
-pub mod Server {
+pub mod server {
     pub use std::net::{TcpListener, TcpStream};
     use std::io::{self, prelude::*, BufReader, Write, Error, Read};
+    use std::thread;
     use std::str;
-    pub use std::sync::mpsc;
+    pub use std::sync::mpsc::{channel, Sender, Receiver};
 
-    pub fn server_service(listener: &TcpListener) {
-        // let (senderLocal, receiverHere) = channel::<T>();
-        // let mut stream = stream;
-        // let (senderHere, recieverLocal) = channel();
-        // let listener = TcpListener::bind(addr).unwrap();
-        // let mut buf = Vec::new();
+    pub fn server_service(listener: TcpListener) -> (Sender<Vec<u8>>, Receiver<Vec<u8>>) {
+        let (sender_local, receiver_here) = channel::<Vec<u8>>();
+        let (sender_here, reciever_local) = channel();
 
         println!("start");
 
-        for stream in listener.incoming() {
-            let mut stream = stream.unwrap();
-            // println!("{:?}", buf);
-            // let recieve = stream.read(&mut buf).unwrap();
-            // println!("{}", recieve);
-            loop {
-                let mut buf = Vec::new();
-                stream.write("hello! 1\x03".as_bytes()).unwrap();
-                // stream.write("\x04\x03".as_bytes()).unwrap();
-                let mut reader = BufReader::new(&stream);
-                reader.read_until(b'\x03', &mut buf).unwrap();
-                buf = buf[..(buf.len()-1)].to_vec();
-                
-                // println!("{:?}", buf)
+        thread::spawn( move || {
+            for stream in listener.incoming() {
+                if let Ok(stream) = stream {
+                    let mut stream = stream;
+                    loop {
+                        if let Ok(data) = receiver_here.try_recv() {
+                            stream.write(data.as_slice()).unwrap();
+                        }
+                        stream.write("\x03".as_bytes()).unwrap();
+                        let mut reader = BufReader::new(&stream);
+                        let mut buf = Vec::new();
+                        reader.read_until(b'\x03', &mut buf).unwrap();
+                        sender_here.send(buf).unwrap();
+                    }
+                } else {
+                    continue;
+                }
+                // break;
             }
-            
-            // break;
-        }
-
-        // loop {
-        //     for stream in listener.incoming() {
-        //         let mut stream = stream.unwrap();
-        //         stream.read(&mut buf).unwrap();
-        //         println!("{:?}", buf);
-        //         // let recieve = stream.read(&mut buf).unwrap();
-        //         // println!("{}", recieve);
-        //         stream.write("\x04".as_bytes()).unwrap();
-        //     }
-        // }
+        });
+        
+        (sender_local, reciever_local)
+        
     }
 
-    pub fn server(addr: &str) {
+    pub fn stater(addr: &str) -> (Sender<Vec<u8>>, Receiver<Vec<u8>>) {
         let listener = TcpListener::bind(addr).unwrap();
-        server_service(&listener)
-
+        server_service(listener)
     }
 }

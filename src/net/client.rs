@@ -1,61 +1,33 @@
-use super::replacer;
-
-pub mod Client {
+pub mod client {
     pub use std::net::{TcpListener, TcpStream};
-    use std::io::{self, prelude::*, BufReader, Write, Error, Read};
+    use std::io::{prelude::*, BufReader, Write};
     use std::str;
-    use std::thread::Thread;
-    pub use std::sync::mpsc::{channel, Sender};
-    use super::replacer::Replace;
+    use std::thread;
+    pub use std::sync::mpsc::{channel, Sender, Receiver};
 
-    fn client_service<T: Replace>(stream:TcpStream){
-        let (senderLocal, receiverHere) = channel::<T>();
+    fn client_service(stream:TcpStream) -> (Sender<Vec<u8>>, Receiver<Vec<u8>>) {
+        let (sender_local, receiver_here) = channel::<Vec<u8>>();
+        let (sender_here, reciever_local) = channel();
         let mut stream = stream;
-        // let (senderHere, recieverLocal) = channel();
 
-        // let mut stream = *stream;
-
-        let mut buff = Vec::new();
-        
-
-        loop {
-            
-            // println!("1");
-            // stream.write("hello! 2\x03".as_bytes()).unwrap();
-            
-            let mut reader = BufReader::new(&stream);
-            let mut buf = Vec::new();
-            reader.read_until(b'\x03', &mut buf).unwrap();
-            // reader.read(&mut buf).unwrap();
-            for i in buf.iter() {
-                buff.push(*i)
+        thread::spawn(move || {
+            loop {
+                if let Ok(data) = receiver_here.try_recv() {
+                    stream.write(data.as_slice()).unwrap();
+                }
+                stream.write("\x03".as_bytes()).unwrap();
+                let mut reader = BufReader::new(&stream);
+                let mut buf = Vec::new();
+                reader.read_until(b'\x03', &mut buf).unwrap();
+                sender_here.send(buf).unwrap();
             }
+        });
 
-            if buff[buff.len()-2] == b'\x04' {
-                buff.clear()
-            }
-            
-            println!("{}", str::from_utf8(&buff).unwrap())
-            // println!("2");
-            // println!("{:?}", buf);
-            // println!("{}", buf.len());
-
-            // if buf.len() != 0 {
-            //     // senderHere.send(buf.clone()).unwrap();
-            //     // println!("{}", str::from_utf8(&buf[..(buf.len() - 1)]).unwrap());
-            //     println!("{:?}", buf);
-            // }
-
-            
-            
-            // if let Ok(a) = receiverHere.try_recv() {
-            //     stream.write(a.to_rawdata().as_slice()).unwrap();
-            // }
-        }
+        (sender_local, reciever_local)
     }
 
-    pub fn client<T: Replace>(addr: &str) {
+    pub fn stater(addr: &str) -> (Sender<Vec<u8>>, Receiver<Vec<u8>>) {
         let stream = TcpStream::connect(addr).unwrap();
-        client_service::<T>(stream);
+        client_service(stream)
     }
 }

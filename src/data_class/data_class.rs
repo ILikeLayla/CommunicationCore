@@ -1,4 +1,4 @@
-pub use chrono::{DateTime, Local};
+use chrono::{DateTime, Local};
 use std::rc::Rc;
 
 pub struct User {
