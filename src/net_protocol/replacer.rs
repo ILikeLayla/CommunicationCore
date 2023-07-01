@@ -1,6 +1,19 @@
-use super::*;
-use std::rc::Rc;
 use std::str;
+use chrono::{DateTime, Local};
+
+pub trait Outputer {
+    fn output<'a, T>(&self, start: &'a str, formatter: fn(&Self) -> T) -> Result<Box<T>, String>;
+}
+
+impl Outputer for Vec<u8> {
+    fn output<'a, T>(&self, start: &'a str, formatter: fn(&Self) -> T) -> Result<Box<T>, String> {
+        if self.starts_with(start.as_bytes()) {
+            Ok(Box::new(formatter(self)))
+        } else {
+            Err("Damaged rawdata".to_string())
+        }
+    }
+}
 
 pub trait Replace {
     fn to_rawdata(&self) -> Vec<u8>;
@@ -16,13 +29,24 @@ impl Replace for Vec<u8> {
     }
 }
 
+impl Replace for String {
+    fn from_rawdata(rawdata: Vec<u8>) -> Result<Box<Self>, String> {
+        if let Ok(data) = str::from_utf8(&rawdata) {
+            Ok(Box::new(data.to_string()))
+        } else {
+            Err("Damaged rawdata".to_string())
+        }
+    }
+    fn to_rawdata(&self) -> Vec<u8> {
+        self.as_bytes().to_vec()
+    }
+}
+
 impl Replace for DateTime<Local> {
     fn from_rawdata(rawdata: Vec<u8>) -> Result<Box<Self>, String> {
-        if rawdata.starts_with("DateTime<Local>".as_bytes()) {
-            Ok(Box::new(Local::now()))
-        } else {
-            Err("damaged rawdata.".to_string())
-        }
+        rawdata.output::<DateTime<Local>>("DateTime<Local>", |_| {
+            Local::now()
+        })
     }
 
     fn to_rawdata(&self) -> Vec<u8> {

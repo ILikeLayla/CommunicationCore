@@ -1,13 +1,17 @@
 pub mod server {
-    pub use std::net::{TcpListener, TcpStream};
-    use std::io::{self, prelude::*, BufReader, Write, Error, Read};
+    use std::net::TcpListener;
+    use std::io::{prelude::*, BufReader, Write};
     use std::thread;
     use std::str;
-    pub use std::sync::mpsc::{channel, Sender, Receiver};
+    use std::sync::{Arc, Mutex};
+    use crate::net_protocol::replacer::Replace;
+    use crate::data_class::{MessagesList, Message};
 
-    pub fn server_service(listener: TcpListener) -> (Sender<Vec<u8>>, Receiver<Vec<u8>>) {
-        let (sender_local, receiver_here) = channel::<Vec<u8>>();
-        let (sender_here, reciever_local) = channel();
+    pub fn server_service(listener: TcpListener) -> (Arc<Mutex<MessagesList>>, Arc<Mutex<MessagesList>>) {
+        let send = Arc::new(Mutex::new(MessagesList::new()));
+        let recv = Arc::new(Mutex::new(MessagesList::new()));
+        let send_here = send.clone();
+        let recv_here = recv.clone();
 
         println!("start");
 
@@ -16,14 +20,20 @@ pub mod server {
                 if let Ok(stream) = stream {
                     let mut stream = stream;
                     loop {
-                        if let Ok(data) = receiver_here.try_recv() {
-                            stream.write(data.as_slice()).unwrap();
+                        if let Ok(mut send_buf) = send_here.lock() {
+                            if let Ok(mut recv_buf) = recv_here.lock() {
+                                for i in send_buf.iter() {
+                                    stream.write(i.to_rawdata().as_slice()).unwrap();
+                                    recv_buf.push(i.clone())
+                                };
+                                send_buf.clear();
+                            }
                         }
                         stream.write("\x03".as_bytes()).unwrap();
                         let mut reader = BufReader::new(&stream);
                         let mut buf = Vec::new();
                         reader.read_until(b'\x03', &mut buf).unwrap();
-                        sender_here.send(buf).unwrap();
+                        recv_here.lock().unwrap().push(*Message::from_rawdata(buf).unwrap());
                     }
                 } else {
                     continue;
@@ -32,11 +42,11 @@ pub mod server {
             }
         });
         
-        (sender_local, reciever_local)
+        (send, recv)
         
     }
 
-    pub fn stater(addr: &str) -> (Sender<Vec<u8>>, Receiver<Vec<u8>>) {
+    pub fn stater(addr: &str) -> (Arc<Mutex<MessagesList>>, Arc<Mutex<MessagesList>>) {
         let listener = TcpListener::bind(addr).unwrap();
         server_service(listener)
     }

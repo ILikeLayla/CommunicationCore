@@ -6,3 +6,5 @@ pub use user::*;
 pub use message::*;
 pub use messages_list::*;
 pub use chrono::{DateTime, Local};
+
+use super::net_protocol::replacer::*;

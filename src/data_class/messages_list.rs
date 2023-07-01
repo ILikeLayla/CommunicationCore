@@ -6,8 +6,16 @@ pub struct MessagesList {
     pub messages: Vec<Message>,
 }
 
+unsafe impl Send for MessagesList {
+    
+}
+
 impl MessagesList {
-    pub fn new(messages: Vec<Message>) -> Self {
+    pub fn new() -> Self {
+        Self { messages: Vec::new() }
+    }
+
+    pub fn from(messages: Vec<Message>) -> Self {
         Self {
             messages
         }
@@ -17,15 +25,28 @@ impl MessagesList {
         self.messages.insert(0, message)
     }
 
-    pub fn changeFromUser(&mut self, user: Rc<User>) {
-        for i in self.messages.iter_mut() {
-            i.from = user.clone();
-        }
+    pub fn iter(&self) -> std::slice::Iter<'_, Message> {
+        self.messages.iter()
     }
 
-    pub fn changeToUser(&mut self, user: Rc<User>) {
-        for i in self.messages.iter_mut() {
-            i.to = user.clone()
-        }
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, Message> {
+        self.messages.iter_mut()
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.messages.is_empty()
+    }
+
+    pub fn clear(&mut self) {
+        self.messages.clear()
+    }
+
+    pub fn send_out(&self) -> Vec<Message> {
+        let mut buf = Vec::new();
+        for i in self.iter() {
+            buf.insert(0, i.clone())
+        };
+        buf
+    }
+    
 }
