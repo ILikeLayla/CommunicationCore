@@ -17,6 +17,7 @@ pub mod server {
 
         thread::spawn( move || {
             for stream in listener.incoming() {
+                // rewrite the net handle logic. 
                 if let Ok(stream) = stream {
                     let mut stream = stream;
                     loop {
@@ -29,6 +30,7 @@ pub mod server {
                                 send_buf.clear();
                             }
                         }
+
                         stream.write("\x03".as_bytes()).unwrap();
                         let mut reader = BufReader::new(&stream);
                         let mut buf = Vec::new();

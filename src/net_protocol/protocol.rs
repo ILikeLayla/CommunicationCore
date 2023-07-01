@@ -1,80 +1,82 @@
 use super::data_class::{MessagesList, Message, User, DateTime, Local};
 use super::replacer::Replace;
 use std::sync::{Arc, Mutex};
+use std::collections::{HashMap, HashSet};
 
 pub struct Manager {
-    buf: MessagesList,
-    all: Arc<Mutex<MessagesList>>,
-    channel: Arc<Mutex<MessagesList>>,
-    users: Vec<User>,
+    channel: (Arc<Mutex<MessagesList>>, Arc<Mutex<MessagesList>>),
+    comms: HashMap<String, MgHandler>,
 }
 
-impl Manager {
-    pub fn new(users: Vec<User>, channel: (Arc<Mutex<MessagesList>>, Arc<Mutex<MessagesList>>)) -> Self {
+pub struct MgHandler {
+    buf: Arc<Mutex<MessagesList>>,
+    all: Arc<Mutex<MessagesList>>,
+    users: Arc<Mutex<Vec<User>>>,
+    id: String,
+    changed: Arc<Mutex<(bool, bool)>>,
+}
+
+impl PartialEq for MgHandler {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    } 
+    
+    fn ne(&self, other: &Self) -> bool {
+        self.id != other.id
+    }
+}
+
+impl MgHandler {
+    pub fn new(users: Vec<User>, id: String) -> Self {
         Self {
-            buf: MessagesList::new(),
-            all: channel.1,
-            channel: channel.0,
-            users
+            buf: Arc::new(Mutex::new(MessagesList::new())),
+            all: Arc::new(Mutex::new(MessagesList::new())),
+            users: Arc::new(Mutex::new(users)),
+            changed: Arc::new(Mutex::new((false, false))),
+            id
         }
     }
 
-    pub fn from(users: Vec<User>, channel: (Arc<Mutex<MessagesList>>, Arc<Mutex<MessagesList>>), send_buf: MessagesList) -> Result<Self, String> {
-        let mut buf = Self::new(users, channel);
-        if let Err(a) = buf.user_check_list(&send_buf) {
-            Err(a)
-        } else {
-            let _ = buf.send_list_to_buf(send_buf);
-            Ok(buf)
-        }
-    }
-
-    pub fn user_check_one(&self, message: &Message) -> Result<(), String> {
-        if (!self.users.contains(&*message.from)) || (!self.users.contains(&*message.to)) {
-            Err("Unplanned user".to_string())
-        } else {
-            Ok(())
-        }
-    }
-
-    pub fn user_check_list(&self, messages: &MessagesList) -> Result<(), String> {
-        for i in messages.messages.iter() {
-            if let Err(_) = self.user_check_one(i) {
-                return Err("Unplanned user(s) include".to_string())
-            }
-        };
-        Ok(())
-    }
-
-    pub fn send_list_to_buf(&mut self, messages: MessagesList) -> Result<(), String> {
-        if let Err(a) = self.user_check_list(&messages) {
-            Err(a)
-        } else {
+    pub fn from(users: Vec<User>, id: String, messages: MessagesList) -> Result<Self, String> {
+        let mut buf = MgHandler::new(users, id);
+        if buf.messages_check(&messages) {
             for i in messages.iter() {
-                self.buf.push(i.clone())
+                buf.send(i.clone())
             };
-            Ok(())
-        }
-    }
-
-    pub fn send_to_buf(&mut self, message:Message) -> Result<(), String>{
-        if let Err(a) = self.user_check_one(&message) {
-            Err(a)
+            return Ok(buf)
         } else {
-            self.buf.push(message);
-            Ok(())
+            Err("Unplanned user(s) include.".to_string())
+        }
+
+    }
+
+    pub fn message_check(&self, message: &Message) -> bool {
+        loop {
+            if let Ok(users) = self.users.try_lock() {
+                return users.contains(&message.from) && users.contains(&message.to)
+            }
         }
     }
 
-    pub fn send_all(&self) {
-        loop {
-            if let Ok(mut buf) = self.channel.lock() {
-                for i in self.buf.send_out().iter() {
-                    buf.push(i.clone())
-                };
-                buf.clear();
-                break;
-            };
-        }
+    pub fn messages_check(&self, messages: &MessagesList) -> bool {
+        let mut users = HashSet::new();
+        let mut out = true;
+        for i in messages.iter() {
+            users.insert(i.from.clone());
+            users.insert(i.to.clone());
+        };
+        let planned_users = self.users.lock().unwrap();
+        for i in users.iter() {
+            out = out && planned_users.contains(i)
+        };
+        out
+    }
+
+    pub fn send(&mut self, message: Message) {
+        let mut condition = self.changed.lock().unwrap();
+        let mut list = self.buf.lock().unwrap();
+
+        list.push(message);
+        condition.0 = true;
     }
 }

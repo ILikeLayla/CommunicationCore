@@ -17,15 +17,18 @@ pub mod client {
 
         thread::spawn(move || {
             loop {
-                if let Ok(mut send_buf) = send_here.lock() {
-                    if let Ok(mut recv_buf) = recv_here.lock() {
-                        for i in send_buf.iter() {
-                            stream.write(i.to_rawdata().as_slice()).unwrap();
-                            recv_buf.push(i.clone())
-                        };
-                        send_buf.clear();
-                    }
-                }
+                // if let Ok(mut send_buf) = send_here.lock() {
+                //     if let Ok(mut recv_buf) = recv_here.lock() {
+                //         for i in send_buf.iter() {
+                //             stream.write(i.to_rawdata().as_slice()).unwrap();
+                //             recv_buf.push(i.clone())
+                //         };
+                //         send_buf.clear();
+                //     }
+                // }
+
+                // rewrite this
+
                 stream.write("\x03".as_bytes()).unwrap();
                 let mut reader = BufReader::new(&stream);
                 let mut buf = Vec::new();

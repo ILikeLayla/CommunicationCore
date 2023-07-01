@@ -3,7 +3,7 @@ use std::rc::Rc;
 use crate::net_protocol::replacer::Outputer;
 use super::User;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Message {
     pub time: DateTime<Local>,
     pub from: Rc<User>,

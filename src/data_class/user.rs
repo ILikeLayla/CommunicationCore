@@ -1,6 +1,6 @@
 use super::Outputer;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq, Hash)]
 pub struct User {
     pub name: String
 }

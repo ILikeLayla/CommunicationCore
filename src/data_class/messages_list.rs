@@ -1,7 +1,9 @@
 use chrono::{DateTime, Local};
 use std::rc::Rc;
 use super::{User, Message};
+use std::sync::{Arc, Mutex};
 
+#[derive(PartialEq, Eq)]
 pub struct MessagesList {
     pub messages: Vec<Message>,
 }
@@ -9,6 +11,30 @@ pub struct MessagesList {
 unsafe impl Send for MessagesList {
     
 }
+
+// impl PartialEq for Arc<Mutex<MessagesList>> {
+//     fn eq(&self, other: &Self) -> bool {
+//         loop {
+//             if let Ok(a) = self.lock() {
+//                 if let Ok(b) = other.lock() {
+//                     return a.messages == b.messages;
+//                     break;
+//                 }
+//             }
+//         }
+//     }
+
+//     fn ne(&self, other: &Self) -> bool {
+//         loop {
+//             if let Ok(a) = self.lock() {
+//                 if let Ok(b) = other.lock() {
+//                     return a.messages != b.messages;
+//                     break;
+//                 }
+//             }
+//         }
+//     }
+// }
 
 impl MessagesList {
     pub fn new() -> Self {
@@ -48,5 +74,5 @@ impl MessagesList {
         };
         buf
     }
-    
+
 }
