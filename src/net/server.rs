@@ -4,12 +4,12 @@ pub mod server {
     use std::thread;
     use std::str;
     use std::sync::{Arc, Mutex};
-    use crate::net_protocol::replacer::Replace;
-    use crate::data_class::{MessagesList, Message};
+    use crate::net_protocol::{replacer::Replace, channel::Channel};
+    use crate::data_class::{FullMessagesList, FullMessage};
 
-    pub fn server_service(listener: TcpListener) -> (Arc<Mutex<MessagesList>>, Arc<Mutex<MessagesList>>) {
-        let send = Arc::new(Mutex::new(MessagesList::new()));
-        let recv = Arc::new(Mutex::new(MessagesList::new()));
+    pub fn server_service(listener: TcpListener) -> Channel {
+        let send = Arc::new(Mutex::new(FullMessagesList::new()));
+        let recv = Arc::new(Mutex::new(FullMessagesList::new()));
         let send_here = send.clone();
         let recv_here = recv.clone();
 
@@ -35,7 +35,7 @@ pub mod server {
                         let mut reader = BufReader::new(&stream);
                         let mut buf = Vec::new();
                         reader.read_until(b'\x03', &mut buf).unwrap();
-                        recv_here.lock().unwrap().push(*Message::from_rawdata(buf).unwrap());
+                        recv_here.lock().unwrap().push(*FullMessage::from_rawdata(buf).unwrap());
                     }
                 } else {
                     continue;
@@ -44,11 +44,11 @@ pub mod server {
             }
         });
         
-        (send, recv)
+        Channel::new(recv, send)
         
     }
 
-    pub fn stater(addr: &str) -> (Arc<Mutex<MessagesList>>, Arc<Mutex<MessagesList>>) {
+    pub fn stater(addr: &str) -> Channel {
         let listener = TcpListener::bind(addr).unwrap();
         server_service(listener)
     }

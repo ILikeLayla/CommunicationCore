@@ -1,38 +1,35 @@
-use chrono::{DateTime, Local};
-use std::rc::Rc;
-use super::{User, Message};
-use std::sync::{Arc, Mutex};
+use super::FullMessage;
 
-#[derive(PartialEq, Eq)]
-pub struct MessagesList {
-    pub messages: Vec<Message>,
+#[derive(Clone)]
+pub struct FullMessagesList {
+    messages: Vec<FullMessage>
 }
 
-unsafe impl Send for MessagesList {
+unsafe impl Send for FullMessagesList {
     
 }
 
 
-impl MessagesList {
+impl FullMessagesList {
     pub fn new() -> Self {
         Self { messages: Vec::new() }
     }
 
-    pub fn from(messages: Vec<Message>) -> Self {
+    pub fn from(messages: Vec<FullMessage>) -> Self {
         Self {
             messages
         }
     }
 
-    pub fn push(&mut self, message:Message) {
+    pub fn push(&mut self, message:FullMessage) {
         self.messages.insert(0, message)
     }
 
-    pub fn iter(&self) -> std::slice::Iter<'_, Message> {
+    pub fn iter(&self) -> std::slice::Iter<'_, FullMessage> {
         self.messages.iter()
     }
 
-    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, Message> {
+    pub fn iter_mut(&mut self) -> std::slice::IterMut<'_, FullMessage> {
         self.messages.iter_mut()
     }
 
@@ -44,7 +41,7 @@ impl MessagesList {
         self.messages.clear()
     }
 
-    pub fn send_out(&self) -> Vec<Message> {
+    pub fn send_out(&self) -> Vec<FullMessage> {
         let mut buf = Vec::new();
         for i in self.iter() {
             buf.insert(0, i.clone())

@@ -40,8 +40,9 @@ impl super::Replace for Message {
             Message::new(
                 Rc::new(*User::from_rawdata(buf[1].as_bytes().to_vec()).unwrap()), 
                 Rc::new(*User::from_rawdata(buf[2].as_bytes().to_vec()).unwrap()), 
-                &buf[0])
-        })
+                &buf[0]
+            )
+        }, "#Dfr04")
     }
 
     fn to_rawdata(&self) -> Vec<u8> {

@@ -3,17 +3,12 @@ use super::replacer::Replace;
 use std::sync::{Arc, Mutex};
 use std::collections::{HashMap, HashSet};
 
-pub struct Manager {
-    channel: (Arc<Mutex<MessagesList>>, Arc<Mutex<MessagesList>>),
-    comms: HashMap<String, MgHandler>,
-}
-
 pub struct MgHandler {
     buf: Arc<Mutex<MessagesList>>,
-    all: Arc<Mutex<MessagesList>>,
+    all: MessagesList,
     users: Arc<Mutex<Vec<User>>>,
     id: String,
-    changed: Arc<Mutex<(bool, bool)>>,
+    changed: Arc<Mutex<Condition>>,
 }
 
 impl PartialEq for MgHandler {
@@ -30,9 +25,9 @@ impl MgHandler {
     pub fn new(users: Vec<User>, id: String) -> Self {
         Self {
             buf: Arc::new(Mutex::new(MessagesList::new())),
-            all: Arc::new(Mutex::new(MessagesList::new())),
+            all: MessagesList::new(),
             users: Arc::new(Mutex::new(users)),
-            changed: Arc::new(Mutex::new((false, false))),
+            changed: Arc::new(Mutex::new(Condition::new())),
             id
         }
     }
@@ -51,10 +46,10 @@ impl MgHandler {
     }
 
     pub fn message_check(&self, message: &Message) -> bool {
-        loop {
-            if let Ok(users) = self.users.try_lock() {
-                return users.contains(&message.from) && users.contains(&message.to)
-            }
+        if let Ok(users) = self.users.lock() {
+            return users.contains(&message.from) && users.contains(&message.to)
+        } else {
+            false
         }
     }
 
@@ -76,7 +71,82 @@ impl MgHandler {
         let mut condition = self.changed.lock().unwrap();
         let mut list = self.buf.lock().unwrap();
 
+        self.all.push(message.clone());
         list.push(message);
-        condition.0 = true;
+        condition.send();
+    }
+}
+
+struct Condition {
+    send: bool,
+    recv: bool,
+}
+
+impl Condition {
+    fn new() -> Self {
+        Self { 
+            send: false, recv: false
+        }
+    }
+}
+
+pub trait Changed {
+    fn send(&mut self);
+    fn recv(&mut self);
+    fn reset(&mut self);
+    fn is_changed(&self) -> bool;
+    fn is_send(&self) -> bool;
+    fn is_recv(&self) -> bool;
+}
+
+impl Changed for Condition {
+    fn recv(&mut self) {
+        self.recv = true
+    }
+
+    fn send(&mut self) {
+        self.send = true
+    }
+
+    fn reset(&mut self) {
+        (self.recv, self.send) = (false, false)
+    }
+
+    fn is_send(&self) -> bool {
+        self.send
+    }
+
+    fn is_recv(&self) -> bool {
+        self.recv
+    }
+
+    fn is_changed(&self) -> bool {
+        self.recv || self.send
+    }
+}
+
+impl Changed for Arc<Mutex<Condition>> {
+    fn recv(&mut self) {
+        self.lock().unwrap().recv()
+    }
+
+    fn send(&mut self) {
+        self.lock().unwrap().send()
+    }
+
+    fn reset(&mut self) {
+        self.lock().unwrap().reset()
+    }
+
+    fn is_changed(&self) -> bool {
+        self.lock().unwrap().is_changed()
+    }
+
+    fn is_recv(&self) -> bool {
+        self.lock().unwrap().is_recv()
+    }
+
+    fn is_send(&self) -> bool {
+        self.lock().unwrap().is_send()
     }
 }
