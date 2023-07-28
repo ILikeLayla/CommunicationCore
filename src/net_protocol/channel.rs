@@ -13,14 +13,12 @@ impl Channel {
         }
     }
 
-    pub fn update(&mut self, send: FullMessagesList) -> FullMessagesList {
-        let mut buf = self.send.lock().unwrap();
-        for i in send.iter() {
-            buf.push(i.clone())
+    pub fn update(&mut self, to_send: FullMessagesList) -> FullMessagesList {
+        let mut send = self.send.lock().unwrap();
+        for i in to_send.iter() {
+            send.push(i.clone())
         };
-        let mut buf = self.recv.lock().unwrap();
-        let out = buf.clone();
-        buf.clear();
-        out
+        let recv = self.recv.lock().unwrap();
+        recv.clone()
     }
 }

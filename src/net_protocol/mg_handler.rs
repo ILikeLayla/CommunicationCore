@@ -75,6 +75,11 @@ impl MgHandler {
         list.push(message);
         condition.send();
     }
+
+    pub fn add(&mut self, message: Message) {
+        self.all.push(message);
+        self.changed.recv();
+    }
 }
 
 struct Condition {
