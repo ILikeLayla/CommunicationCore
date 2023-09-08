@@ -4,11 +4,11 @@ use std::sync::{Arc, Mutex};
 use std::collections::{HashMap, HashSet};
 
 pub struct MgHandler {
-    buf: Arc<Mutex<MessagesList>>,
+    pub buf: Arc<Mutex<MessagesList>>,
     all: MessagesList,
     users: Arc<Mutex<Vec<User>>>,
     id: String,
-    changed: Arc<Mutex<Condition>>,
+    pub changed: Arc<Mutex<Condition>>,
 }
 
 impl PartialEq for MgHandler {
@@ -80,9 +80,11 @@ impl MgHandler {
         self.all.push(message);
         self.changed.recv();
     }
+
+    pub fn recv(&mut self)  {}
 }
 
-struct Condition {
+pub struct Condition {
     send: bool,
     recv: bool,
 }
@@ -102,6 +104,7 @@ pub trait Changed {
     fn is_changed(&self) -> bool;
     fn is_send(&self) -> bool;
     fn is_recv(&self) -> bool;
+    fn handled_send(&mut self);
 }
 
 impl Changed for Condition {
@@ -128,6 +131,10 @@ impl Changed for Condition {
     fn is_changed(&self) -> bool {
         self.recv || self.send
     }
+
+    fn handled_send(&mut self) {
+        self.send = false
+    }
 }
 
 impl Changed for Arc<Mutex<Condition>> {
@@ -153,5 +160,9 @@ impl Changed for Arc<Mutex<Condition>> {
 
     fn is_send(&self) -> bool {
         self.lock().unwrap().is_send()
+    }
+
+    fn handled_send(&mut self) {
+        self.lock().unwrap().handled_send()
     }
 }

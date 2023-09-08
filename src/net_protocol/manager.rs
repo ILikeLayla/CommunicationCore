@@ -2,7 +2,7 @@ use super::data_class::{Message, User, DateTime, Local, FullMessagesList, FullMe
 use super::replacer::Replace;
 use std::sync::{Arc, Mutex};
 use std::collections::{HashMap, HashSet};
-use super::mg_handler::MgHandler;
+use super::mg_handler::{MgHandler, Changed};
 use super::channel::Channel;
 
 pub struct Manager {
@@ -19,6 +19,17 @@ impl Manager {
     }
 
     pub fn update(&mut self) {
-        
+        let mut send_buf = Vec::new();
+        for (id, mg) in &self.comms {
+            if mg.changed.is_send() {
+                let mut buf = mg.buf.lock().unwrap();
+                for data in buf.iter() {
+                    send_buf.push(data.clone())
+                };
+                buf.clear();
+                
+            }
+        }
+
     }
 }
