@@ -1,0 +1,56 @@
+|    others    |
+
+    ^       |
+    |       |
+    |       v
+   send    recv
+
+|     local     |
+
+
+main
+    -> 
+
+ui  
+    -> 用户发送信息  
+        -> 调用当前所在mg_handler的send 
+                -> 将文本信息包装成message
+                -> 将该message传入到mg_handler的send函数中来更新buf和all
+                -> 更新condition (将send更新为true)
+        -> 页面更新
+    -> 页面更新
+        -> 调用manager的update
+        -> 遍历manager中的所有mg_handler
+            -> 如果该mg_handler的recv为true
+                (为新功能留的，比如说消息弹窗什么的)
+                -> 更新mg_handler的recv为false
+        -> 获得当前的mg_handler
+            -> 显示所有message
+
+service
+    -> 获取channel中的所有fullmessage
+        -> 将fullmessage转成rawdata
+        -> 将该rawdata写入到网络流中
+    -> 将 \x03 写入到网络流中
+    -> 获取网络流中直到 \x03 前所有的数据
+    -> 检查数据中是否有rawdata
+        -> 如果有
+            -> 将rawdata转成fullmessage
+            -> 将该fullmessage放入channel中
+
+manager
+    -> update
+        -> 建立一个存储messages的buf
+        -> 遍历comms中的所有mg_handler
+            -> 如果当前mg_handler的send为true
+                -> 遍历该mg_handler的messages_list
+                    -> 将message包装成fullmessage
+                    -> 将该fullmessages放入buf中
+                -> 更新mg_handler的buf为空
+                -> 更新mg_handler的send为false
+        -> 将buf中的所有fullmessage传入到channel的update中，并接收channel中的接收的fullmessage
+        -> 遍历接收的所有fullmessage
+            -> 使用遍历匹配fullmessage的mgr_id和manager所管理的mg_handler的id
+                -> 若匹配成功，则将fullmessage解包成message
+                -> 将该message传入到匹配的mg_handler的recv中
+                -> 更新mg_handler的recv为true

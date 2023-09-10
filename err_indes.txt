@@ -1,0 +1,7 @@
+#D -> data
+ - fr -> from_rawdata
+   - 01 -> DateTime<Local>
+   - 02 -> String
+   - 03 -> User
+   - 04 -> Message
+   - 05 -> FullMessage
