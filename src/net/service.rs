@@ -5,7 +5,7 @@ use std::thread;
 use std::io::{BufRead, BufReader, Write};
 use std::collections::HashMap;
 
-pub fn service(channel: &Channel, send: Arc<Mutex<HashMap<String, TcpStream>>>, recv: TcpListener) {
+fn service(channel: &Channel, send: Arc<Mutex<HashMap<String, TcpStream>>>, recv: TcpListener) {
     let recv_channel = channel.clone();
     let send_channel = channel.clone();
 
@@ -39,3 +39,5 @@ pub fn service(channel: &Channel, send: Arc<Mutex<HashMap<String, TcpStream>>>, 
         }
     }); 
 }
+
+fn start_service(channel: &Channel, send)
