@@ -41,12 +41,12 @@ impl FullMessagesList {
         self.messages.clear()
     }
 
-    pub fn send_out(&self) -> Vec<FullMessage> {
-        let mut buf = Vec::new();
-        for i in self.iter() {
-            buf.insert(0, i.clone())
-        };
-        buf
-    }
+    // pub fn send_out(&self) -> Vec<FullMessage> {
+    //     let mut buf = Vec::new();
+    //     for i in self.iter() {
+    //         buf.insert(0, i.clone())
+    //     };
+    //     buf
+    // }
 
 }

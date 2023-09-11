@@ -1,13 +1,12 @@
 use super::data_class::{MessagesList, Message, User, DateTime, Local};
-use super::replacer::Replace;
 use std::sync::{Arc, Mutex};
 use std::collections::{HashMap, HashSet};
 
 pub struct MgHandler {
     pub buf: Arc<Mutex<MessagesList>>,
     all: MessagesList,
-    users: Arc<Mutex<Vec<User>>>,
-    id: String,
+    pub users: Arc<Mutex<Vec<User>>>,
+    pub id: String,
     pub changed: Arc<Mutex<Condition>>,
 }
 
@@ -45,26 +44,28 @@ impl MgHandler {
 
     }
 
-    pub fn message_check(&self, message: &Message) -> bool {
-        if let Ok(users) = self.users.lock() {
-            return users.contains(&message.from) && users.contains(&message.to)
-        } else {
-            false
-        }
+    pub fn message_check(&self, _message: &Message) -> bool {
+        // if let Ok(users) = self.users.lock() {
+        //     return users.contains(&message.from) && users.contains(&message.to)
+        // } else {
+        //     false
+        // }
+        true
     }
 
-    pub fn messages_check(&self, messages: &MessagesList) -> bool {
-        let mut users = HashSet::new();
-        let mut out = true;
-        for i in messages.iter() {
-            users.insert(i.from.clone());
-            users.insert(i.to.clone());
-        };
-        let planned_users = self.users.lock().unwrap();
-        for i in users.iter() {
-            out = out && planned_users.contains(i)
-        };
-        out
+    pub fn messages_check(&self, _messages: &MessagesList) -> bool {
+        // let mut users = HashSet::new();
+        // let mut out = true;
+        // for i in messages.iter() {
+        //     users.insert(i.from.clone());
+        //     users.insert(i.to.clone());
+        // };
+        // let planned_users = self.users.lock().unwrap();
+        // for i in users.iter() {
+        //     out = out && planned_users.contains(i)
+        // };
+        // out
+        true
     }
 
     pub fn send(&mut self, message: Message) {
@@ -76,7 +77,7 @@ impl MgHandler {
         condition.send();
     }
 
-    pub fn add(&mut self, message: Message) {
+    pub fn push(&mut self, message: Message) {
         self.all.push(message);
         self.changed.recv();
     }

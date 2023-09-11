@@ -46,7 +46,7 @@ service
             -> 将该 rawdata + \x03 写入到send_stream中
     -> 返回 (send_send_channel, recv_recv_channel)
 
-                old:
+                old: only port
                 -> 获取channel中的所有fullmessage
                     -> 将fullmessage转成rawdata
                     -> 将该rawdata写入到网络流中
@@ -57,6 +57,9 @@ service
                         -> 将rawdata转成fullmessage
                         -> 将该fullmessage放入channel中
 
+
+
+
 manager
     -> update
         -> 建立一个存储messages的buf
@@ -65,8 +68,8 @@ manager
                 -> 遍历该mg_handler的messages_list
                     -> 将message包装成fullmessage
                     -> 将该fullmessages放入buf中
-                -> 更新mg_handler的buf为空
                 -> 更新mg_handler的send为false
+        -> 更新所有mg_handler的buf为空
         -> 将buf中的所有fullmessage传入到channel的update中，并接收channel中的接收的fullmessage
         -> 遍历接收的所有fullmessage
             -> 使用遍历匹配fullmessage的mgr_id和manager所管理的mg_handler的id

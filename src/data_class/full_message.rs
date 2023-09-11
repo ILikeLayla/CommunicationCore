@@ -2,8 +2,8 @@ use super::{Message, Replace, Outputer};
 
 #[derive(Clone)]
 pub struct FullMessage {
-    message: Message,
-    mgr_id: String
+    pub message: Message,
+    pub mgr_id: String
 }
 
 impl FullMessage {
@@ -11,13 +11,13 @@ impl FullMessage {
         Self { message, mgr_id: id }
     }
 
-    pub fn get_data(&self) -> Message {
-        self.message.clone()
-    }
+    // pub fn get_data(&self) -> Message {
+    //     self.message.clone()
+    // }
 
-    pub fn get_id(&self) -> String {
-        self.mgr_id.clone()
-    }
+    // pub fn get_id(&self) -> String {
+    //     self.mgr_id.clone()
+    // }
 }
 
 impl Replace for FullMessage {

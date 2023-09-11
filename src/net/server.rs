@@ -16,35 +16,35 @@ pub mod server {
         println!("start");
 
         thread::spawn( move || {
-            for stream in listener.incoming() {
-                // rewrite the net handle logic. 
-                if let Ok(stream) = stream {
-                    let mut stream = stream;
-                    loop {
-                        if let Ok(mut send_buf) = send_here.lock() {
-                            if let Ok(mut recv_buf) = recv_here.lock() {
-                                for i in send_buf.iter() {
-                                    stream.write(i.to_rawdata().as_slice()).unwrap();
-                                    recv_buf.push(i.clone())
-                                };
-                                send_buf.clear();
-                            }
-                        }
+            // for stream in listener.incoming() {
+            //     // rewrite the net handle logic. 
+            //     if let Ok(stream) = stream {
+            //         let mut stream = stream;
+            //         loop {
+            //             if let Ok(mut send_buf) = send_here.lock() {
+            //                 if let Ok(mut recv_buf) = recv_here.lock() {
+            //                     for i in send_buf.iter() {
+            //                         stream.write(i.to_rawdata().as_slice()).unwrap();
+            //                         recv_buf.push(i.clone())
+            //                     };
+            //                     send_buf.clear();
+            //                 }
+            //             }
 
-                        stream.write("\x03".as_bytes()).unwrap();
-                        let mut reader = BufReader::new(&stream);
-                        let mut buf = Vec::new();
-                        reader.read_until(b'\x03', &mut buf).unwrap();
-                        recv_here.lock().unwrap().push(*FullMessage::from_rawdata(buf).unwrap());
-                    }
-                } else {
-                    continue;
-                }
-                // break;
-            }
+            //             stream.write("\x03".as_bytes()).unwrap();
+            //             let mut reader = BufReader::new(&stream);
+            //             let mut buf = Vec::new();
+            //             reader.read_until(b'\x03', &mut buf).unwrap();
+            //             recv_here.lock().unwrap().push(*FullMessage::from_rawdata(buf).unwrap());
+            //         }
+            //     } else {
+            //         continue;
+            //     }
+            //     // break;
+            // }
         });
         
-        Channel::new(recv, send)
+        // Channel::new(recv, send)
         
     }
 
