@@ -28,6 +28,24 @@ ui
             -> 显示所有message
 
 service
+    new:
+    -> 监听端口recv_port
+        -> 获得recv_stream
+    -> 连接send_ip
+        -> 获得send_stream
+    -> 拉起thread
+        -> recv_stream获取\x03前的所有数据
+        -> 检查数据中是否有rawdata
+            -> 将rawdata转成fullmessage
+            -> 将该fullmessage放入channel中
+    -> 拉起thread
+        -> 获取channel中的所有fullmessage
+            -> 将fullmessage转成rawdata
+            -> 将该 rawdata + \x03 写入到send_stream中
+
+
+
+    old:
     -> 获取channel中的所有fullmessage
         -> 将fullmessage转成rawdata
         -> 将该rawdata写入到网络流中
