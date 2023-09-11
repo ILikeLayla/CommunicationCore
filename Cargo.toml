@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 chrono = "0.4.24"
-serde = "1.0.164"
+# serde = "1.0.164"

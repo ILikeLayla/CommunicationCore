@@ -23,13 +23,14 @@ impl Manager {
         for (id, mg) in &self.comms {
             if mg.changed.is_send() {
                 let mut buf = mg.buf.lock().unwrap();
-                for data in buf.iter() {
-                    send_buf.push(data.clone())
-                };
-                buf.clear();
-                
+        //         for data in buf.iter() {
+        //             send_buf.push(data.clone())
+        //         };
+        //         buf.clear(); 
             }
         }
+
+
 
     }
 }

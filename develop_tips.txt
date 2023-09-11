@@ -29,6 +29,8 @@ ui
 
 service
     new:
+    -> 新建send_channels (send_send_channel, recv_send_channel)
+    -> 新建recv_channels (send_recv_channel, recv_recv_channel)
     -> 监听端口recv_port
         -> 获得recv_stream
     -> 连接send_ip
@@ -37,24 +39,23 @@ service
         -> recv_stream获取\x03前的所有数据
         -> 检查数据中是否有rawdata
             -> 将rawdata转成fullmessage
-            -> 将该fullmessage放入channel中
+            -> 将该fullmessage放入send_recv_channel中
     -> 拉起thread
-        -> 获取channel中的所有fullmessage
+        -> 获取recv_send_channel中的所有fullmessage
             -> 将fullmessage转成rawdata
             -> 将该 rawdata + \x03 写入到send_stream中
+    -> 返回 (send_send_channel, recv_recv_channel)
 
-
-
-    old:
-    -> 获取channel中的所有fullmessage
-        -> 将fullmessage转成rawdata
-        -> 将该rawdata写入到网络流中
-    -> 将 \x03 写入到网络流中
-    -> 获取网络流中直到 \x03 前所有的数据
-    -> 检查数据中是否有rawdata
-        -> 如果有
-            -> 将rawdata转成fullmessage
-            -> 将该fullmessage放入channel中
+                old:
+                -> 获取channel中的所有fullmessage
+                    -> 将fullmessage转成rawdata
+                    -> 将该rawdata写入到网络流中
+                -> 将 \x03 写入到网络流中
+                -> 获取网络流中直到 \x03 前所有的数据
+                -> 检查数据中是否有rawdata
+                    -> 如果有
+                        -> 将rawdata转成fullmessage
+                        -> 将该fullmessage放入channel中
 
 manager
     -> update
