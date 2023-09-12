@@ -57,9 +57,6 @@ service
                         -> 将rawdata转成fullmessage
                         -> 将该fullmessage放入channel中
 
-
-
-
 manager
     -> update
         -> 建立一个存储messages的buf

@@ -21,7 +21,7 @@ impl Channel {
         }
     }
 
-    pub fn update(&mut self, to_send: FullMessagesList) -> FullMessagesList {
+    pub fn update(&self, to_send: FullMessagesList) -> FullMessagesList {
         let mut send = self.send.lock().unwrap();
         for i in to_send.iter() {
             send.push(i.clone())
@@ -30,19 +30,19 @@ impl Channel {
         recv.clone()
     }
 
-    pub fn send_list(&mut self, to_send: FullMessagesList) {
+    pub fn send_list(&self, to_send: FullMessagesList) {
         let mut send = self.send.lock().unwrap();
         for i in to_send.iter() {
             send.push(i.clone())
         };
     }
 
-    pub fn send(&mut self, to_send: FullMessage) {
+    pub fn send(&self, to_send: FullMessage) {
         let mut send = self.send.lock().unwrap();
         send.push(to_send.clone())
     }
 
-    pub fn recv(&mut self) -> FullMessagesList {
+    pub fn recv(&self) -> FullMessagesList {
         let recv = self.recv.lock().unwrap();
         recv.clone()
     }
