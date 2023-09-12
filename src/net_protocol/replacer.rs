@@ -1,11 +1,6 @@
 use std::str;
 use chrono::{DateTime, Local};
 
-enum RawData {
-    String(String),
-    Vec(Vec<u8>)
-}
-
 pub trait Outputer {
     fn output<'a, T>(&self, start: &'a str, formatter: fn(&Self) -> T, err: &str) -> Result<Box<T>, String>;
 }

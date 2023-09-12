@@ -1,7 +1,4 @@
-use chrono::{DateTime, Local};
-use std::rc::Rc;
-use super::{User, Message};
-use std::sync::{Arc, Mutex};
+use super::Message;
 
 #[derive(PartialEq, Eq)]
 pub struct MessagesList {

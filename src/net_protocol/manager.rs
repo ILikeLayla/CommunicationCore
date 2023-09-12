@@ -1,7 +1,5 @@
-use super::data_class::{Message, User, DateTime, Local, FullMessagesList, FullMessage};
-use super::replacer::Replace;
-use std::sync::{Arc, Mutex};
-use std::collections::{HashMap, HashSet};
+use super::data_class::{FullMessagesList, FullMessage};
+use std::collections::HashMap;
 use super::mg_handler::{MgHandler, Changed};
 use super::channel::Channel;
 
