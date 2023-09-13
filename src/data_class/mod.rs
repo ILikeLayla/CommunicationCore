@@ -11,4 +11,4 @@ pub use full_message::*;
 pub use full_messages_list::*;
 pub use chrono::{DateTime, Local};
 
-use super::net_protocol::replacer::*;
+use super::net_protocol::{Replace, Outputer};

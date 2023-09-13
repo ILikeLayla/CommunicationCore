@@ -1,5 +1,5 @@
-use super::data_class::{FullMessage, FullMessagesList};
 use std::sync::{Arc, Mutex};
+use super::data_class::{FullMessage, FullMessagesList};
 
 #[derive(Clone)]
 pub struct Channel {

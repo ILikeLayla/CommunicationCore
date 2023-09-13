@@ -1,7 +1,6 @@
 use chrono::{DateTime, Local};
 use std::rc::Rc;
-use crate::net_protocol::replacer::Outputer;
-use super::User;
+use super::{Outputer, User};
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct Message {

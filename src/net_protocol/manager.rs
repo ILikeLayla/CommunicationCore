@@ -1,5 +1,5 @@
-use super::data_class::{FullMessagesList, FullMessage};
 use std::collections::HashMap;
+use super::data_class::{FullMessagesList, FullMessage};
 use super::mg_handler::{MgHandler, Changed};
 use super::channel::Channel;
 

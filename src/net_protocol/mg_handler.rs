@@ -1,5 +1,5 @@
-use super::data_class::{MessagesList, Message, User};
 use std::sync::{Arc, Mutex};
+use super::data_class::{MessagesList, Message, User};
 
 pub struct MgHandler {
     pub buf: Arc<Mutex<MessagesList>>,
