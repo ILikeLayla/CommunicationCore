@@ -2,7 +2,7 @@ use super::Outputer;
 
 #[derive(PartialEq, Eq, Hash)]
 pub struct User {
-    pub name: String
+    name: String
 }
 
 impl User {
@@ -10,6 +10,14 @@ impl User {
         Self {
             name: name.to_string()
         }
+    }
+
+    pub fn get_name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn change_name(&mut self, target: String) {
+        self.name = target
     }
 }
 

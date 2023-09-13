@@ -4,7 +4,7 @@ use super::data_class::{MessagesList, Message, User};
 pub struct MgHandler {
     pub buf: Arc<Mutex<MessagesList>>,
     all: MessagesList,
-    pub users: Arc<Mutex<Vec<User>>>,
+    // users: Arc<Mutex<Vec<User>>>,
     pub id: String,
     pub changed: Arc<Mutex<Condition>>,
 }
@@ -20,52 +20,68 @@ impl PartialEq for MgHandler {
 }
 
 impl MgHandler {
-    pub fn new(users: Vec<User>, id: String) -> Self {
+    pub fn new(id: String) -> Self {
         Self {
             buf: Arc::new(Mutex::new(MessagesList::new())),
             all: MessagesList::new(),
-            users: Arc::new(Mutex::new(users)),
             changed: Arc::new(Mutex::new(Condition::new())),
             id
         }
+
+        // with user
+        //     Self {
+        //         buf: Arc::new(Mutex::new(MessagesList::new())),
+        //         all: MessagesList::new(),
+        //         users: Arc::new(Mutex::new(users)),
+        //         changed: Arc::new(Mutex::new(Condition::new())),
+        //         id
+        //     }
     }
 
-    pub fn from(users: Vec<User>, id: String, messages: MessagesList) -> Result<Self, String> {
-        let mut buf = MgHandler::new(users, id);
-        if buf.messages_check(&messages) {
-            for i in messages.iter() {
-                buf.send(i.clone())
-            };
-            return Ok(buf)
-        } else {
-            Err("Unplanned user(s) include.".to_string())
-        }
+    pub fn from(id: String, messages: MessagesList) -> Result<Self, String> {
+        let mut buf = MgHandler::new(id);
+        for i in messages.iter() {
+            buf.send(i.clone())
+        };
+        return Ok(buf)
 
+        // with user
+        //     let mut buf = MgHandler::new(users, id);
+        //     if buf.messages_check(&messages) {
+        //         for i in messages.iter() {
+        //             buf.send(i.clone())
+        //         };
+        //         return Ok(buf)
+        //     } else {
+        //         Err("Unplanned user(s) include.".to_string())
+        //     }
     }
 
-    pub fn message_check(&self, _message: &Message) -> bool {
-        // if let Ok(users) = self.users.lock() {
-        //     return users.contains(&message.from) && users.contains(&message.to)
-        // } else {
-        //     false
-        // }
-        true
-    }
+    // =====================================================================
+    // user check
 
-    pub fn messages_check(&self, _messages: &MessagesList) -> bool {
-        // let mut users = HashSet::new();
-        // let mut out = true;
-        // for i in messages.iter() {
-        //     users.insert(i.from.clone());
-        //     users.insert(i.to.clone());
-        // };
-        // let planned_users = self.users.lock().unwrap();
-        // for i in users.iter() {
-        //     out = out && planned_users.contains(i)
-        // };
-        // out
-        true
-    }
+    // pub fn message_check(&self, _message: &Message) -> bool {
+    //     if let Ok(users) = self.users.lock() {
+    //         return users.contains(&message.from) && users.contains(&message.to)
+    //     } else {
+    //         false
+    //     }
+    // }
+
+    // pub fn messages_check(&self, _messages: &MessagesList) -> bool {
+    //     let mut users = HashSet::new();
+    //     let mut out = true;
+    //     for i in messages.iter() {
+    //         users.insert(i.from.clone());
+    //         users.insert(i.to.clone());
+    //     };
+    //     let planned_users = self.users.lock().unwrap();
+    //     for i in users.iter() {
+    //         out = out && planned_users.contains(i)
+    //     };
+    //     out
+    // }
+    // =====================================================================
 
     pub fn send(&mut self, message: Message) {
         let mut condition = self.changed.lock().unwrap();
@@ -80,8 +96,6 @@ impl MgHandler {
         self.all.push(message);
         self.changed.recv();
     }
-
-    pub fn recv(&mut self)  {}
 }
 
 pub struct Condition {

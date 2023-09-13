@@ -4,10 +4,10 @@ use super::{Outputer, User};
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct Message {
-    pub time: DateTime<Local>,
-    pub from: Rc<User>,
-    pub to: Rc<User>,
-    pub text: String,
+    time: DateTime<Local>,
+    from: Rc<User>,
+    to: Rc<User>,
+    text: String,
 }
 
 impl Message {
@@ -17,6 +17,22 @@ impl Message {
             text: text.to_string(),
             from, to
         }
+    }
+
+    pub fn get_text(&self) -> &str {
+        &self.text
+    }
+
+    pub fn get_to(&self) -> Rc<User> {
+        self.to.clone()
+    }
+
+    pub fn get_from(&self) -> Rc<User> {
+        self.from.clone()
+    }
+
+    pub fn get_time(&self) -> DateTime<Local> {
+        self.time.clone()
     }
 }
 

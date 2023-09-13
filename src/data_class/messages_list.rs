@@ -5,11 +5,6 @@ pub struct MessagesList {
     pub messages: Vec<Message>,
 }
 
-unsafe impl Send for MessagesList {
-    
-}
-
-
 impl MessagesList {
     pub fn new() -> Self {
         Self { messages: Vec::new() }
@@ -50,3 +45,5 @@ impl MessagesList {
     }
 
 }
+
+unsafe impl Send for MessagesList {}
