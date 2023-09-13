@@ -48,7 +48,7 @@ impl super::Replace for Message {
             let mut buf = Vec::new();
             let data = &data[8..(data.len()-1)];
             let data = std::str::from_utf8(&data.to_vec()).unwrap().to_string();
-            for i in data.split(",") {
+            for i in data.split("\x1F") {
                 buf.push(i.to_string())
             };
 
@@ -61,6 +61,6 @@ impl super::Replace for Message {
     }
 
     fn to_rawdata(&self) -> Vec<u8> {
-        format!("Message<{},{},{}>", self.text, self.from, self.to).as_bytes().to_vec()
+        format!("Message<{}\x1F{}\x1F{}>", self.text, self.from, self.to).as_bytes().to_vec()
     }
 }

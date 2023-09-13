@@ -3,12 +3,12 @@ use super::data_class::{FullMessagesList, FullMessage};
 use super::mg_handler::{MgHandler, Changed};
 use super::channel::Channel;
 
-pub struct Manager {
+pub struct MgManager {
     channel: Channel,
     comms: HashMap<String, MgHandler>,
 }
 
-impl Manager {
+impl MgManager {
     pub fn new(channel: Channel) -> Self {
         Self { 
             comms: HashMap::new(),

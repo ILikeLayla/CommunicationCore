@@ -4,10 +4,10 @@ use std::sync::{Arc, Mutex};
 use std::net::{TcpListener, TcpStream};
 use std::collections::HashMap;
 
-pub fn start(send: Arc<Mutex<HashMap<String, TcpStream>>>, recv: TcpListener) -> net_protocol::Manager {
+pub fn start(send: Arc<Mutex<HashMap<String, TcpStream>>>, recv: TcpListener) -> net_protocol::MgManager {
     let channel = net_protocol::Channel::new();
     
-    let manager = net_protocol::Manager::new(channel.clone());
+    let manager = net_protocol::MgManager::new(channel.clone());
     net::start_service(channel, send, recv);
 
     manager
